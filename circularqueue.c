@@ -1,11 +1,8 @@
-#ifndef _CIRCULAR_QUEUE_H_
-#include "circularqueue.h"
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <semaphore.h>
+#include "circularqueue.h"
 #define SHARED 0
 //------------------------------------------------------------------------------------------
 // Allocates space for circular queue 'q' having 'capacity' number of elements
@@ -42,21 +39,33 @@ int queue_init( CircularQueue **q, unsigned int capacity)  // TO DO: change retu
 // Inserts 'value' at the tail of queue 'q'
 void queue_put( CircularQueue *q, QueueElem value)
 {
-	// TO DO BY STUDENTS
+	if ( q->last  == q->capacity - 1 ){
+		q->v[q->last] = 0;
+		q->last = 0;
+	}
+	else {
+		q->v[q->last] = value;
+		q->last++;
+	}
 }
 //------------------------------------------------------------------------------------------
 // Removes element at the head of queue 'q' and returns its 'value'
 QueueElem queue_get( CircularQueue *q)
 {
-	// TO DO BY STUDENTS
-	return NULL;
+	QueueElem value = q->v[q->first++];
+	
+	if (q->first == q->capacity)
+		q->first = 0;
+
+	return value;
 }
 //------------------------------------------------------------------------------------------
 // Frees space allocated for the queue elements and auxiliary management data
 // Must be called when the queue is no more needed
 void queue_destroy( CircularQueue *q)
 {
-	// TO DO BY STUDENTS
+	free(q->v);
+	free(q);
 }
 //==========================================================================================
 // EXAMPLE: Creation of a circular queue using queue_init()

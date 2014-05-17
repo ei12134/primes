@@ -8,9 +8,10 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
-#ifndef _CIRCULAR_QUEUE_H_
 #include "circularqueue.h"
-#endif
+#include "quicksort.h"
+
+CircularQueue *q;
 
 long int parse_long(char *str, int base) {
 
@@ -60,14 +61,30 @@ int main(int argc, char *argv[]) {
 	   argv[0]);
     exit (EXIT_FAILURE);
   }
-
        
   /* Safely convert limit string argument to a long integer */
-  long int numberLimit;
-  if ((numberLimit = parse_long(argv[1], 10)) == LONG_MAX) {
-    printf("Enter a valid numberLimit number\n");
+  unsigned int size;
+  if ((size = parse_long(argv[1], 10)) == LONG_MAX) {
+    printf("Enter a valid number list size number\n");
     exit (EXIT_FAILURE);
   }
-
+  
+  /* Create circular queue */
+  
+  if ( queue_init( &q, size) == -1 ){
+	printf("Failed creating circular queue\n");
+    exit (EXIT_FAILURE);
+  }
+  
+  unsigned int i;
+  for (i = 3; i < (size + 3); i++){
+	queue_put(q, i);
+  }
+  
+  for (i = 0; i < size; i++){
+	printf("%d ",(unsigned int) queue_get(q));
+  }
+	printf("\n");
+  
   exit (EXIT_SUCCESS);
 }
