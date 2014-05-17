@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,6 +13,9 @@
 #include "quicksort.h"
 
 CircularQueue *q;
+unsigned int *primes, currentPrimes, maxPrimes;
+
+int is_multiple_of_prime(unsigned int number);
 
 long int parse_long(char *str, int base) {
 
@@ -39,7 +43,7 @@ long int parse_long(char *str, int base) {
     return LONG_MAX;
   }
 
-  if (number <= 1) {
+  if (number < 2) {
 #ifdef DEBUG
     fprintf(stderr, "Non positive number\n");
 #endif
@@ -69,22 +73,64 @@ int main(int argc, char *argv[]) {
     exit (EXIT_FAILURE);
   }
   
-  /* Create circular queue */
+  currentPrimes = 0;
   
-  if ( queue_init( &q, size) == -1 ){
-	printf("Failed creating circular queue\n");
-    exit (EXIT_FAILURE);
-  }
-  
-  unsigned int i;
-  for (i = 3; i < (size + 3); i++){
-	queue_put(q, i);
-  }
-  
-  for (i = 0; i < size; i++){
-	printf("%d ",(unsigned int) queue_get(q));
-  }
-	printf("\n");
-  
-  exit (EXIT_SUCCESS);
+  if ( size == 2 ){
+		maxPrimes = 1;
+		currentPrimes++;
+		primes = malloc(sizeof(unsigned int));
+		if (primes == NULL) {
+			fprintf(stderr,"Memory exhausted");
+			exit (EXIT_FAILURE);
+		}
+		primes[0] = 2;
+		currentPrimes++;
+	} 
+	else {
+		maxPrimes = 1 + ( (1.2 * (double)size) - 1) / log((double)size);
+		primes = malloc(sizeof(unsigned int) * maxPrimes);
+		if (primes == NULL) {
+			fprintf(stderr,"Memory exhausted");
+			exit (EXIT_FAILURE);
+		}
+		primes[0] = 2;
+		currentPrimes++;
+
+			/* Create circular queue */
+		  if ( queue_init( &q, size) == -1 ){
+			printf("Failed creating circular queue\n");
+			exit (EXIT_FAILURE);
+		  }
+		  
+		  unsigned int i;
+		  for (i = 3; i <= size; i++){
+			if ( i % 2 != 0 )
+				queue_put(q, i);
+		  } 
+
+		unsigned int index = 3, queueLength = q->capacity; 
+		while (index <= queueLength) {
+			unsigned int headPrime = queue_get(q);
+			
+			if (!is_multiple_of_prime(index))
+				primes[currentPrimes++] = headPrime;	
+		
+			index+=2;			
+		}
+	}
+	unsigned int i;
+	for (i = 0; i < maxPrimes; i++)
+		printf("%d ",primes[i]);
+		printf("\n");
+	  
+	exit (EXIT_SUCCESS);
+}
+
+int is_multiple_of_prime(unsigned int number){
+	unsigned int i;
+	for ( i = 0; i < currentPrimes; i++ ){
+		if ( number % primes[i] == 0 )
+			return 1;
+	}
+	return 0;
 }

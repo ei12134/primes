@@ -53,10 +53,11 @@ void queue_put( CircularQueue *q, QueueElem value)
 QueueElem queue_get( CircularQueue *q)
 {
 	QueueElem value = q->v[q->first++];
+	q->capacity--;
 	
 	if (q->first == q->capacity)
 		q->first = 0;
-
+	
 	return value;
 }
 //------------------------------------------------------------------------------------------
