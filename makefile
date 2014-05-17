@@ -1,6 +1,6 @@
 CC = gcc
 PROG = primes
-CFLAGS = -Wall -lrt -lm
+CFLAGS = -Wall -lrt -lm -pthread
 SRCS = primes.c circularqueue.c quicksort.c
 BIN_DIR = bin
 
