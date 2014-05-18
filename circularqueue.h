@@ -33,12 +33,5 @@ QueueElem queue_get( CircularQueue *q);
 // Frees space allocated for the queue elements and auxiliary management data
 // Must be called when the queue is no more needed
 void queue_destroy( CircularQueue *q);
-//==========================================================================================
-// EXAMPLE: Creation of a circular queue using queue_init()
-#define QUEUE_SIZE 10 // TO DO: test your program using different queue sizes
-// ...
-// CircularQueue *q;
-// queue_init(&q,QUEUE_SIZE);
-// ...
 
 #endif

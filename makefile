@@ -1,7 +1,7 @@
 CC = gcc
 PROG = primes
 CFLAGS = -Wall -lrt -lm -pthread
-SRCS = primes.c circularqueue.c quicksort.c
+SRCS = primes.c circularqueue.c utils.c
 BIN_DIR = bin
 
 all: bin monitor
