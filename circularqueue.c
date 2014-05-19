@@ -44,7 +44,7 @@ void queue_put(CircularQueue *q, QueueElem value) {
 		q->v[q->last] = 0;
 		q->last = 0;
 	} else {
-		q->v[q->last] = value;
+		q->v[q->last] = value; //temos de usar mutex AKI
 		q->last++;
 	}
 }
@@ -55,7 +55,7 @@ QueueElem queue_get(CircularQueue *q) {
 	q->capacity--;
 
 	if (q->first == q->capacity)
-		q->first = 0;
+		q->first = 0; ////temos de usar mutex AKI
 
 	return value;
 }
