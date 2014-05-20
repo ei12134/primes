@@ -1,4 +1,5 @@
-#ifndef _CIRCULAR_QUEUE_H_
+#ifndef _CIRCULARQUEUE_H_
+#define _CIRCULARQUEUE_H_
 
 #include <semaphore.h>
 //------------------------------------------------------------------------------------------

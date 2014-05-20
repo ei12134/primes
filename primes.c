@@ -110,8 +110,10 @@ int main(int argc, char *argv[]) {
 	
 	// Display primes list
 	unsigned int i;
+	printf("Primes in the range [1-%d]: ",size);
 	for (i = 0; i < maxPrimes; i++)
-		printf("%d ", primes[i]);
+		if(primes[i] != 0)
+			printf("%d ", primes[i]);
 	printf("\n");
 
 	exit (EXIT_SUCCESS);
