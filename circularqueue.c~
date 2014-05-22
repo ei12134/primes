@@ -53,15 +53,13 @@ void queue_put(CircularQueue *q, QueueElem value) {
 //------------------------------------------------------------------------------------------
 // Removes element at the head of queue 'q' and returns its 'value'
 QueueElem queue_get(CircularQueue *q) {
-  sem_wait(&q->empty);
-  QueueElem value = q->v[q->first++];
-  
-  if (q->first == q->capacity)
-    q->first = 0; ////temos de usar mutex AKI
-  
-  sem_post(&q->empty);
 
-  return value;
+	QueueElem value = q->v[q->first++];
+
+	if (q->first == q->capacity)
+		q->first = 0; ////temos de usar mutex AKI
+
+	return value;
 }
 //------------------------------------------------------------------------------------------
 // Frees space allocated for the queue elements and auxiliary management data
