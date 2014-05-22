@@ -40,7 +40,7 @@ int queue_init(CircularQueue **q, unsigned int capacity) // TO DO: change return
 //------------------------------------------------------------------------------------------
 // Inserts 'value' at the tail of queue 'q'
 void queue_put(CircularQueue *q, QueueElem value) {
-  sem_wait(&q->empty);
+  sem_wait(&q->full);
   if (q->last == q->capacity - 1) {
     q->v[q->last] = 0;
     q->last = 0;
@@ -48,7 +48,7 @@ void queue_put(CircularQueue *q, QueueElem value) {
     q->v[q->last] = value; //temos de usar mutex AKI
     q->last++;
   }
-  sem_post(&q->full);
+  sem_post(&q->empty);
 }
 //------------------------------------------------------------------------------------------
 // Removes element at the head of queue 'q' and returns its 'value'
@@ -59,7 +59,7 @@ QueueElem queue_get(CircularQueue *q) {
   if (q->first == q->capacity)
     q->first = 0; ////temos de usar mutex AKI
   
-  sem_post(&q->empty);
+  sem_post(&q->full);
 
   return value;
 }
@@ -67,8 +67,8 @@ QueueElem queue_get(CircularQueue *q) {
 // Frees space allocated for the queue elements and auxiliary management data
 // Must be called when the queue is no more needed
 void queue_destroy(CircularQueue *q) {
-	free(q->v);
-	sem_destroy(&q->empty);
-	sem_destroy(&q->full);
-	free(q);
+  free(q->v);
+  sem_destroy(&q->empty);
+  sem_destroy(&q->full);
+  free(q);
 }

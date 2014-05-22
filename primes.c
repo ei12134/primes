@@ -9,7 +9,6 @@
 #include <string.h>
 
 #include "circularqueue.h"
-#include "utils.h"
 #define QUEUE_SIZE 5
 
 unsigned int *primes, currentPrimes, maxPrimes, size;
