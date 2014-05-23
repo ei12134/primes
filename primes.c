@@ -10,14 +10,19 @@
 #include <string.h>
 
 #include "circularqueue.h"
-#define QUEUE_SIZE 10
+#define QUEUE_SIZE 5
 
-unsigned int *primes, currentPrimes, maxPrimes, size;
+unsigned int *primes, currentPrimes, size;
 sem_t done;
 pthread_mutex_t mutex;
 
 void *thr_init(void *arg);
 void *thr_filter(void *arg);
+
+int compare (const void * a, const void * b)
+{
+  return ( *(int*)a - *(int*)b );
+}
 
 long int parse_long(char *str, int base) {
 
@@ -74,6 +79,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Allocate memory for primes array
+
+unsigned int maxPrimes;
   if (size == 2)
     maxPrimes = 1;
   else
@@ -97,16 +104,16 @@ int main(int argc, char *argv[]) {
   pthread_t tid;
   pthread_create(&tid, NULL, thr_init, NULL);
 
-  // Signal the end of primes determination else{}
+  // Wait for signal at the end of primes determination
+  sem_wait(&done);
 
   // Sort primes list
-  // quick_sort()...
-	
-  sem_wait(&done);
+qsort (primes, currentPrimes, sizeof(unsigned int), compare);
+
   // Display primes list
   unsigned int i;
   printf("Primes in the range [1-%d]: ", size);
-  for (i = 0; i < maxPrimes; i++) {
+  for (i = 0; i < currentPrimes; i++) {
     printf("%d ", primes[i]);
   }
   printf("\n");
