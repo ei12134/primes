@@ -10,10 +10,9 @@
 #include <string.h>
 
 #include "circularqueue.h"
-#define QUEUE_SIZE 5
+#define QUEUE_SIZE 10
 
 unsigned int *primes, currentPrimes, maxPrimes, size;
-int counter;
 sem_t done;
 pthread_mutex_t mutex;
 
@@ -103,7 +102,6 @@ int main(int argc, char *argv[]) {
   // Sort primes list
   // quick_sort()...
 	
-  counter = 0;
   sem_wait(&done);
   // Display primes list
   unsigned int i;
@@ -135,13 +133,12 @@ void *thr_init(void *arg){
     
     // Put all odd numbers into the queue
     unsigned int i;
-    for (i = 3; i <= size; i++)
+    for (i = 3; i <= size; i++){
       if (i % 2 != 0){	
 	queue_put(q, i);
-	pthread_mutex_lock(&mutex);
-	counter++;
-	pthread_mutex_unlock(&mutex);
       }
+	}
+	queue_put(q, 0);
   }
   else
     sem_post(&done);
@@ -153,23 +150,19 @@ void *thr_init(void *arg){
 void *thr_filter(void *arg) {
 
   CircularQueue *input = arg, *output;
-  
   // Add first queue number to the primes list as it is necessarily a prime
   unsigned int prime = queue_get(input);
   pthread_mutex_lock(&mutex);
   primes[currentPrimes++] = prime;
-  counter--;
   pthread_mutex_unlock(&mutex);
   
   // Stop checking for multiples of primes if first queue number greater than sqrt(N)
   if (prime > sqrt(size)) {
     unsigned int first;
     // Add all primes in queue to the primes list until 0 appears
-    while (counter > 0){
-      first = queue_get(input);
+    while ((first = queue_get(input)) != 0){
       pthread_mutex_lock(&mutex);
       primes[currentPrimes++] = first; 
-      counter--;
       pthread_mutex_unlock(&mutex);
     }
     sem_post(&done);
@@ -185,20 +178,13 @@ void *thr_filter(void *arg) {
     pthread_create(&tid, NULL, thr_filter, output);
     
     unsigned int first;
-    //Add non multiple numbers to the new queue list until 0 appears
-    do {
-      first = queue_get(input);
-      pthread_mutex_lock(&mutex);
-      counter--;
-      pthread_mutex_unlock(&mutex);   
-      
+    // Add non multiple numbers to the new queue list until 0 appears
+    while ((first = queue_get(input)) != 0){   
       if (first % prime != 0){
 	queue_put(output, first);
-	pthread_mutex_lock(&mutex);
-	counter++;
-	pthread_mutex_unlock(&mutex); 
       }
-    } while (first != 0);
+    } 
+	queue_put(output,0);	
   }
   
   // Exit the thread

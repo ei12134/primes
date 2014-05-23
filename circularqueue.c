@@ -43,40 +43,27 @@ int queue_init(CircularQueue **q, unsigned int capacity) // TO DO: change return
 //------------------------------------------------------------------------------------------
 // Inserts 'value' at the tail of queue 'q'
 void queue_put(CircularQueue *q, QueueElem value) {
-  printf("1\n");
   sem_wait(&q->empty);
+ 
   pthread_mutex_lock(&q->mutex);
-  if (q->last == q->capacity - 1) {
-    printf("2\n");
-    q->v[q->last] = 0;
-    q->last = 0;
-  } else {
-    q->v[q->last] = value;
-    q->last++;  
-    printf("3\n");
-  } 
+  q->v[q->last++] = value;
+  q->last %= q->capacity;
   pthread_mutex_unlock(&q->mutex);
+
   sem_post(&q->full);
 }
 //------------------------------------------------------------------------------------------
 // Removes element at the head of queue 'q' and returns its 'value'
 QueueElem queue_get(CircularQueue *q) {
-  printf("4\n");
   sem_wait(&q->full);
-  printf("5\n");
   pthread_mutex_lock(&q->mutex);
   QueueElem value = q->v[q->first++];
-  pthread_mutex_unlock(&q->mutex);
-  printf("6\n");
+ 
   if (q->first == q->capacity){
-    pthread_mutex_lock(&q->mutex);
     q->first = 0;
-    pthread_mutex_unlock(&q->mutex);
-    printf("7\n");
   }
-  printf("8\n");
+  pthread_mutex_unlock(&q->mutex);
   sem_post(&q->empty);
-  printf("9\n");
   
   return value;
 }
@@ -85,6 +72,7 @@ QueueElem queue_get(CircularQueue *q) {
 // Must be called when the queue is no more needed
 void queue_destroy(CircularQueue *q) {
   free(q->v);
+  pthread_mutex_destroy	(&q->mutex);
   sem_destroy(&q->empty);
   sem_destroy(&q->full);
   free(q);
