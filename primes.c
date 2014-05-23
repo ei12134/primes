@@ -11,8 +11,9 @@
 
 #include "circularqueue.h"
 #define QUEUE_SIZE 5
+#define SHARED 0
 
-unsigned int *primes, currentPrimes, size;
+unsigned int *primes, primesCounter, size;
 sem_t done;
 pthread_mutex_t mutex;
 
@@ -91,7 +92,7 @@ unsigned int maxPrimes;
     exit (EXIT_FAILURE);
   }
 
-  if (sem_init(&done, 0, 0) == -1) {
+  if (sem_init(&done, SHARED, 0) == -1) {
     //..
     return 1;
   }
@@ -108,12 +109,12 @@ unsigned int maxPrimes;
   sem_wait(&done);
 
   // Sort primes list
-qsort (primes, currentPrimes, sizeof(unsigned int), compare);
+qsort (primes, primesCounter, sizeof(unsigned int), compare);
 
   // Display primes list
   unsigned int i;
   printf("Primes in the range [1-%d]: ", size);
-  for (i = 0; i < currentPrimes; i++) {
+  for (i = 0; i < primesCounter; i++) {
     printf("%d ", primes[i]);
   }
   printf("\n");
@@ -125,7 +126,7 @@ void *thr_init(void *arg){
   
   // Add first prime to the primes list
   primes[0] = 2;
-  currentPrimes = 1;
+  primesCounter = 1;
   
   // Create circular queue if size > 2
   if (size > 2) {
@@ -160,7 +161,7 @@ void *thr_filter(void *arg) {
   // Add first queue number to the primes list as it is necessarily a prime
   unsigned int prime = queue_get(input);
   pthread_mutex_lock(&mutex);
-  primes[currentPrimes++] = prime;
+  primes[primesCounter++] = prime;
   pthread_mutex_unlock(&mutex);
   
   // Stop checking for multiples of primes if first queue number greater than sqrt(N)
@@ -169,7 +170,7 @@ void *thr_filter(void *arg) {
     // Add all primes in queue to the primes list until 0 appears
     while ((first = queue_get(input)) != 0){
       pthread_mutex_lock(&mutex);
-      primes[currentPrimes++] = first; 
+      primes[primesCounter++] = first; 
       pthread_mutex_unlock(&mutex);
     }
     sem_post(&done);
