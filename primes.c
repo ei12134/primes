@@ -4,6 +4,7 @@
 #include <limits.h>
 #include <math.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,8 +13,11 @@
 #define QUEUE_SIZE 5
 
 unsigned int *primes, currentPrimes, maxPrimes, size;
+int counter;
+sem_t done;
+pthread_mutex_t mutex;
 
-void *thr_main(void *arg);
+void *thr_init(void *arg);
 void *thr_filter(void *arg);
 
 long int parse_long(char *str, int base) {
@@ -76,31 +80,44 @@ int main(int argc, char *argv[]) {
   else
     maxPrimes = 1 + ((1.2 * (double) size) - 1) / log((double) size);
 
-  primes = malloc(sizeof(unsigned int) * maxPrimes);
-  if (primes == NULL) {
+  if ( (primes = malloc(sizeof(unsigned int) * maxPrimes)) == NULL ){
     fprintf(stderr, "Memory exhausted");
     exit (EXIT_FAILURE);
   }
 
+  if (sem_init(&done, 0, 0) == -1) {
+    //..
+    return 1;
+  }
+  
+  if ( (pthread_mutex_init(&mutex, NULL)) != 0) {
+    // ..
+    return 1;
+  };
+  
   pthread_t tid;
-  pthread_create(&tid, NULL, thr_main, NULL);
+  pthread_create(&tid, NULL, thr_init, NULL);
 
   // Signal the end of primes determination else{}
 
   // Sort primes list
   // quick_sort()...
 	
+  counter = 0;
+  sem_wait(&done);
   // Display primes list
   unsigned int i;
-  printf("Primes in the range [1-%d]: ",size);
-  for (i = 0; i < maxPrimes; i++)
+  printf("Primes in the range [1-%d]: ", size);
+  for (i = 0; i < maxPrimes; i++) {
     printf("%d ", primes[i]);
+  }
   printf("\n");
 
   exit (EXIT_SUCCESS);
 }
 
-void *thr_main(void *arg){
+void *thr_init(void *arg){
+  
   // Add first prime to the primes list
   primes[0] = 2;
   currentPrimes = 1;
@@ -112,7 +129,6 @@ void *thr_main(void *arg){
       printf("Failed creating circular queue\n");
       exit (EXIT_FAILURE);
     }
-
     // Create thread filter
     pthread_t tid;
     pthread_create(&tid, NULL, thr_filter, q);
@@ -120,11 +136,18 @@ void *thr_main(void *arg){
     // Put all odd numbers into the queue
     unsigned int i;
     for (i = 3; i <= size; i++)
-      if (i % 2 != 0)
+      if (i % 2 != 0){	
 	queue_put(q, i);
+	pthread_mutex_lock(&mutex);
+	counter++;
+	pthread_mutex_unlock(&mutex);
+      }
   }
+  else
+    sem_post(&done);
+  
   // Exit the thread
-  pthread_exit(0);
+  pthread_exit(EXIT_SUCCESS);
 }
 
 void *thr_filter(void *arg) {
@@ -133,35 +156,52 @@ void *thr_filter(void *arg) {
   
   // Add first queue number to the primes list as it is necessarily a prime
   unsigned int prime = queue_get(input);
+  pthread_mutex_lock(&mutex);
   primes[currentPrimes++] = prime;
-
+  counter--;
+  pthread_mutex_unlock(&mutex);
+  
   // Stop checking for multiples of primes if first queue number greater than sqrt(N)
   if (prime > sqrt(size)) {
     unsigned int first;
     // Add all primes in queue to the primes list until 0 appears
-    while ((first = queue_get(input)) != 0)
-      primes[currentPrimes++] = first;
+    while (counter > 0){
+      first = queue_get(input);
+      pthread_mutex_lock(&mutex);
+      primes[currentPrimes++] = first; 
+      counter--;
+      pthread_mutex_unlock(&mutex);
+    }
+    sem_post(&done);
   }
-  else{
+  else {
     // Initialize output thread
     if (queue_init(&output, QUEUE_SIZE) == -1) {
       printf("Failed creating output circular queue\n");
       exit (EXIT_FAILURE);
     }
-    
     // Create next thread
     pthread_t tid;
     pthread_create(&tid, NULL, thr_filter, output);
     
     unsigned int first;
-    // Add non multiple numbers to the new queue list until 0 appears
-    while ((first = queue_get(input)) != 0) {
-      if (first % prime != 0)
+    //Add non multiple numbers to the new queue list until 0 appears
+    do {
+      first = queue_get(input);
+      pthread_mutex_lock(&mutex);
+      counter--;
+      pthread_mutex_unlock(&mutex);   
+      
+      if (first % prime != 0){
 	queue_put(output, first);
-    }
+	pthread_mutex_lock(&mutex);
+	counter++;
+	pthread_mutex_unlock(&mutex); 
+      }
+    } while (first != 0);
   }
   
   // Exit the thread
   queue_destroy(input);
-  pthread_exit(0);
+  pthread_exit(EXIT_SUCCESS);
 }
