@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include "circularqueue.h"
+
 #define SHARED 0
 //------------------------------------------------------------------------------------------
 // Allocates space for circular queue 'q' having 'capacity' number of elements

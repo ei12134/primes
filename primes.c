@@ -11,8 +11,8 @@
 #define QUEUE_SIZE 5
 #define SHARED 0
 
-unsigned int *primes, primesCounter, size;
-int threadCounter;
+unsigned int *primes, primesCounter;
+long int threadCounter, size;
 sem_t done;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -67,7 +67,7 @@ long int parse_long(char *str, int base) {
 int main(int argc, char *argv[]) {
   
   // Verify arguments validity
-  if (argc < 2) {
+  if (argc != 2) {
     printf("Usage: %s <upper number limit>.\n", argv[0]);
     exit (EXIT_FAILURE);
   }
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
   
   // Display primes list
   unsigned int i;
-  printf("Primes in the range [1-%d]: ", size);
+  printf("Primes in the range [1-%ld]: ", size);
   for (i = 0; i < primesCounter; i++) {
     printf("%d ", primes[i]);
   }
