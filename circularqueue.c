@@ -12,26 +12,24 @@
 int queue_init(CircularQueue **q, unsigned int capacity) // TO DO: change return value
 {
   if ((*q = (CircularQueue *) malloc(sizeof(CircularQueue))) == NULL) {
-    fprintf(stderr, "Memory exhausted");
+    perror("Failure in malloc()");
     return 1;
   }
   if (sem_init(&((*q)->empty), SHARED, capacity) == -1) {
-    //..sets errno -> include errno.h?
+    perror("Failure in sem_init()");
     return 1;
   }
   if (sem_init(&((*q)->full), SHARED, 0) == -1) {
-    //..
+    perror("Failure in sem_init()");
     return 1;
   }
   if ( (pthread_mutex_init(&((*q)->mutex), NULL)) != 0) {
-    // ..
+    perror("Failure in pthread_mutex_init()");
     return 1;
   };
   
   if (((*q)->v = (QueueElem *) malloc(capacity * sizeof(QueueElem))) == NULL){
-    fprintf(stderr,
-	    "Memory exhausted (malloc of %d bytes) - Try lower upper limit\n",
-	    capacity);
+    perror("Failure in malloc()");
     return 1;
   }
   (*q)->capacity = capacity;
@@ -72,7 +70,7 @@ QueueElem queue_get(CircularQueue *q) {
 // Must be called when the queue is no more needed
 void queue_destroy(CircularQueue *q) {
   free(q->v);
-  pthread_mutex_destroy	(&q->mutex);
+  pthread_mutex_destroy(&q->mutex);
   sem_destroy(&q->empty);
   sem_destroy(&q->full);
   free(q);
