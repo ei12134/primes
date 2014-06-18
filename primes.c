@@ -12,7 +12,7 @@
 #define SHARED 0
 
 unsigned int *primes, primesCounter;
-long int threadCounter, size;
+long int size;
 sem_t done;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -22,7 +22,7 @@ void *thr_filter(void *arg);
 
 int compare (const void * a, const void * b)
 {
-  return ( *(int*)a - *(int*)b );
+  return ( *(int*)a - *(int*)b);
 }
 
 long int parse_long(char *str, int base) {
@@ -102,12 +102,6 @@ int main(int argc, char *argv[]) {
   // Wait for signal at the end of primes determination
   sem_wait(&done);
   
-  // Uses a conditional variable to wait for all threads to finish
-  pthread_mutex_lock(&mutex);
-  while (threadCounter > 0)
-    pthread_cond_wait(&cond, &mutex);
-  pthread_mutex_unlock(&mutex);
-  
   // Sort primes list
   qsort(primes, primesCounter, sizeof(unsigned int), compare);
   
@@ -119,10 +113,10 @@ int main(int argc, char *argv[]) {
   }
   printf("\n");
   
-  // Exit the primes program
+  // Exit the primes program main thread
   pthread_cond_destroy(&cond);
   pthread_mutex_destroy(&mutex);
-  exit(EXIT_SUCCESS);
+  pthread_exit(EXIT_SUCCESS);
 }
 
 void *thr_init(void *arg){
@@ -142,11 +136,6 @@ void *thr_init(void *arg){
     pthread_t tid;
     pthread_create(&tid, NULL, thr_filter, q);
     
-    pthread_mutex_lock(&mutex);
-    threadCounter = 2;
-    pthread_cond_signal(&cond);
-    pthread_mutex_unlock(&mutex);
-    
     // Put all odd numbers into the queue
     unsigned int i;
     for (i = 3; i <= size; i++){
@@ -158,11 +147,6 @@ void *thr_init(void *arg){
   }
   else
     sem_post(&done);
-  
-  pthread_mutex_lock(&mutex);
-  threadCounter--;
-  pthread_cond_signal(&cond);
-  pthread_mutex_unlock(&mutex);
   
   // Exit the thread
   pthread_exit(EXIT_SUCCESS);
@@ -197,11 +181,6 @@ void *thr_filter(void *arg) {
     pthread_t tid;
     pthread_create(&tid, NULL, thr_filter, output);
     
-    pthread_mutex_lock(&mutex);
-    threadCounter++;
-    pthread_cond_signal(&cond);
-    pthread_mutex_unlock(&mutex);
-    
     // Add non multiple numbers to the new queue list until 0 appears
     while ((first = queue_get(input)) != 0){   
       if (first % prime != 0){
@@ -213,10 +192,6 @@ void *thr_filter(void *arg) {
   
   // Exit the thread
   queue_destroy(input);
-  pthread_mutex_lock(&mutex);
-  threadCounter--;
-  pthread_cond_signal(&cond);
-  pthread_mutex_unlock(&mutex);
   
   pthread_exit(EXIT_SUCCESS);
 }
