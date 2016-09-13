@@ -1,15 +1,16 @@
-CC = gcc
-PROG = primes
+CC = clang
 CFLAGS = -Wall -lrt -lm -pthread
-SRCS = primes.c circularqueue.c
+PROG = primes
 BIN_DIR = bin
+SRC_DIR = src
+SRCS = ${SRC_DIR}/primes.c ${SRC_DIR}/circularqueue.c
 
-all: bin monitor
+all: bin primes
 
 bin:
 	mkdir -p ${BIN_DIR}
 
-monitor:
+primes:
 	$(CC) $(SRCS) -o $(BIN_DIR)/$(PROG) $(CFLAGS)
 
 clean:
