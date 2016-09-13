@@ -4,18 +4,24 @@
 
 Import the project using a subversion program:
 
-```git clone https://github.com/ei12134/primes```
+```
+git clone https://github.com/ei12134/primes
+```
 
 ## Compilation
 
 Run the makefile inside the project folder: 
 
-```make```
+```
+make
+```
 
 ## Multithreaded prime numbers generator (primes)
 
 Program execution:
 
-```./bin/primes <upper_limit>```
+```
+./bin/primes <upper_limit>
+```
 
 * upper_limit - prime range upper limit
