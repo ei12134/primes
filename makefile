@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -Wall -lrt -lm -pthread -DDEBUG
+CFLAGS = -Wall -lrt -lm -pthread
 PROG = primes
 BIN_DIR = bin
 SRC_DIR = src
