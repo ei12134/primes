@@ -9,41 +9,44 @@
 * Initializes semaphores & mutex needed to implement the producer-consumer paradigm.
 * Initializes indexes of the head and tail of the queue.
 */
-int queue_init(CircularQueue **q, unsigned int capacity)
+bool queue_init(CircularQueue **q, unsigned int capacity)
 {
     if ((*q = (CircularQueue *)malloc(sizeof(CircularQueue))) == NULL)
     {
         perror("Failure in malloc()");
-        return -1;
+        return false;
     }
+
     if (sem_init(&((*q)->empty), SHARED, capacity) == -1)
     {
         perror("Failure in sem_init()");
-        return -1;
+        return false;
     }
+
     if (sem_init(&((*q)->full), SHARED, 0) == -1)
     {
         perror("Failure in sem_init()");
-        return -1;
+        return false;
     }
+
     if ((pthread_mutex_init(&((*q)->mutex), NULL)) != 0)
     {
         perror("Failure in pthread_mutex_init()");
-        return -1;
+        return false;
     };
 
     if (((*q)->v = (QueueElem *)malloc(capacity * sizeof(QueueElem))) == NULL)
     {
         perror("Failure in malloc()");
-        return -1;
+        return false;
     }
-    
+
     /* Initialize queue variables */
     (*q)->capacity = capacity;
     (*q)->first = 0;
     (*q)->last = 0;
 
-    return 0;
+    return true;
 }
 
 /* Inserts 'value' at the tail of queue 'q' */

@@ -2,9 +2,10 @@
 #define _CIRCULARQUEUE_H_
 
 #include <semaphore.h>
+#include <stdbool.h>
 
 #define SHARED 0
-#define QUEUE_SIZE 5
+#define QUEUE_SIZE 300
 
 typedef unsigned long QueueElem; /* type of the circular queue elements */
 
@@ -28,7 +29,7 @@ typedef struct
 * Initializes semaphores & mutex needed to implement the producer-consumer paradigm.
 * Initializes indexes of the head and tail of the queue.
 */
-int queue_init(CircularQueue **q, unsigned int capacity);
+bool queue_init(CircularQueue **q, unsigned int capacity);
 
 /* Inserts 'value' at the tail of queue 'q'. */
 void queue_put(CircularQueue *q, QueueElem value);
@@ -38,7 +39,7 @@ QueueElem queue_get(CircularQueue *q);
 
 /* 
 * Frees space allocated for the queue elements and auxiliary management data.
-* Must be called when the queue is no more needed.
+* Must be called when the queue is no longer needed.
 */
 void queue_destroy(CircularQueue *q);
 

@@ -35,6 +35,9 @@
 *.dSYM/
 *.su
 
+# Misc
+.directory
+
 # Folders
 bin
 .vscode
